@@ -1,0 +1,11 @@
+services:
+  vvp:
+    image: vvp:latest
+    container_name: vvp
+    build: .
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+#    environment:
+#      - REFERER_URL=https://www.youtube.com/
+#      - ALLOWED_ORIGINS=https://*.googlevideo.com,https://jellyfin.example.com
