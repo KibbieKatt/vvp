@@ -1,0 +1,23 @@
+{
+  "name": "vvp",
+  "version": "1.0.0",
+  "description": "VRC Video Proxy is a realtime video proxy & cache for improving playback in VRChat",
+  "homepage": "https://github.com/KibbieKatt/vvp#readme",
+  "bugs": {
+    "url": "https://github.com/KibbieKatt/vvp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KibbieKatt/vvp.git"
+  },
+  "license": "MIT",
+  "author": "KibbieKatt",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
