@@ -1,4 +1,4 @@
-import { cleanEnv, num, str } from 'envalid';
+import { cleanEnv, makeValidator, num, str } from 'envalid';
 import express from'express';
 import which from 'which';
 import YTDlpWrap from 'yt-dlp-wrap';
@@ -6,9 +6,34 @@ import NodeCache from 'node-cache';
 import { Mutex } from 'async-mutex';
 import { proxyFetch } from './lib/proxyFetch.js';
 
+const listValidator = makeValidator((value) => {
+  return value
+    .split(",")
+    .map(item => item.trim())
+    .filter(item => item.length);
+});
+
+// Allows only youtube by default
+const defaultAllowedOrigins = [
+  "https://*.googlevideo.com"
+];
+
+// Allows m3u8, octet, and some video mime types
+const defaultAllowedMimes = [
+  "application/vnd.apple.mpegurl", // .m3u8
+  "application/octet-stream", // YT .ts
+  "video/mp2t", // .ts
+  "video/mp4", // .mp4
+  "video/x-matroska", // .mkv
+];
+
+// Validate environment variables
 const env = cleanEnv(process.env, {
   PORT: num({ default: 3000 }),
   YTDLP_BIN: str({ default: "yt-dlp" }),
+  REFERER_URL: str({ default: "https://www.youtube.com/" }),
+  ALLOWED_ORIGINS: listValidator({ default: defaultAllowedOrigins }),
+  ALLOWED_MIMES: listValidator({ default: defaultAllowedMimes }),
 });
 
 // Find available yt-dlp
@@ -57,7 +82,10 @@ app.get('/watch', async (req, res) => {
           }
 
           // Proxy m3u8 and rewrite URLs before caching and responding
-          return proxyFetch(url)
+          return proxyFetch({
+            referer: env.REFERER_URL,
+            allowedOrigins: env.ALLOWED_ORIGINS,
+            allowedMimes: env.ALLOWED_MIMES}, url)
             .then(async (response) => {
               if (!response.ok) {
                 return res.status(response.status).json({
