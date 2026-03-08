@@ -5,6 +5,8 @@ import YTDlpWrap from 'yt-dlp-wrap';
 import NodeCache from 'node-cache';
 import { Mutex } from 'async-mutex';
 import { proxyFetch } from './lib/proxyFetch.js';
+import { isM3U8, guessUrlMime } from './lib/mimeTypes.js';
+import { rewritePlaylist } from './lib/playlistTools.js';
 
 const listValidator = makeValidator((value) => {
   return value
@@ -43,6 +45,13 @@ if (env.ALLOWED_ORIGINS.includes("*")) {
   console.warn("WARNING: Allowing all origins is a security risk! Consider removing \"*\" from ALLOWED_ORIGINS!");
 }
 
+// For convenience
+const proxyConfig = {
+  referer: env.REFERER_URL,
+  allowedOrigins: env.ALLOWED_ORIGINS,
+  allowedMimes: env.ALLOWED_MIMES
+};
+
 // Find available yt-dlp
 const ytdlpBin = which.sync(env.YTDLP_BIN);
 const youtubedl = new YTDlpWrap.default(ytdlpBin);
@@ -55,8 +64,11 @@ youtubedl.getVersion()
 
 const app = express();
 
-// Cache with default ttl for playlists
+// Initialize cache with a TTL of 5 hours
+// Intended to last the duration of a watch party
 const cache = new NodeCache({ stdTTL: 18000, checkperiod: 30 });
+// Use lower ttl for segments, avoid storing entire movies in ram
+const segmentCacheTTL = 300;
 // Use a mutex to avoid racing fetches
 const cacheMutex = new Mutex();
 
@@ -78,7 +90,7 @@ app.get('/watch', async (req, res) => {
 
         return cachedResponse;
       } else {
-        console.log(`New request for: ${videoID}`);
+        console.log(`Serving from proxy: ${videoID}`);
 
         // Get m3u8 from yt-dlp
         return youtubedl.execPromise([
@@ -88,17 +100,14 @@ app.get('/watch', async (req, res) => {
           `https://www.youtube.com/watch?v=${videoID}`,
         ]).then(async (stdout) => {
           const url = stdout.trim();
-          if (!url.endsWith(".m3u8")) {
+          if (!isM3U8(url)) {
             return Promise.reject({
               message: "YouTube returned a non-m3u8 url: " + url
             });
           }
 
           // Proxy m3u8 and rewrite URLs before caching and responding
-          return proxyFetch({
-            referer: env.REFERER_URL,
-            allowedOrigins: env.ALLOWED_ORIGINS,
-            allowedMimes: env.ALLOWED_MIMES}, url)
+          return proxyFetch(proxyConfig, url)
             .then(async (response) => {
               if (!response.ok) {
                 return res.status(response.status).json({
@@ -108,9 +117,10 @@ app.get('/watch', async (req, res) => {
               }
               // Tecnically thix promise leaks rejections but I'm choosing to not think about it
               const playlistData = await response.text();
-              cache.set(videoID, playlistData);
+              const modifiedPlaylist = rewritePlaylist(playlistData, url);
+              cache.set(videoID, modifiedPlaylist);
 
-              return playlistData;
+              return modifiedPlaylist;
             });
         });
       }
@@ -133,6 +143,75 @@ app.get('/watch', async (req, res) => {
   } else {
     res.status(500).json({
       error: "Invalid video ID",
+    });
+  }
+});
+
+app.get('/api/proxy', async (req, res) => {
+  try {
+    // URL is already decoded
+    const url = req.query.url;
+
+    if (!url) {
+      return res.status(400).json({ error: "URL is required" });
+    }
+
+    // Check cache for the URL
+    const cachedResponse = cache.get(url);
+    if (cachedResponse) {
+      console.log(`Serving from cache: ${url}`);
+      if (isM3U8(url)) {
+        res.set({
+          "Content-Type": "application/vnd.apple.mpegurl",
+          "Cache-Control": "public, max-age=600" // 10 minutes
+        });
+      } else {
+        res.set({
+          "Content-Type": guessUrlMime(url),
+          "Cache-Control": "public, max-age=31536000" // 1 year for segments
+        });
+      }
+      return res.status(200).send(cachedResponse);
+    }
+
+    const response = await proxyFetch(proxyConfig, url);
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: response.statusText,
+        status: response.status
+      });
+    }
+
+    if (isM3U8(url)) {
+      const playlistText = await response.text();
+      const modifiedPlaylist = rewritePlaylist(playlistText, url);
+
+      // Cache the response
+      cache.set(url, modifiedPlaylist);
+
+      res.set({
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Cache-Control": "public, max-age=600" // 10 minutes
+      });
+      return res.send(modifiedPlaylist);
+    } else {
+      const arrayBuffer = await response.arrayBuffer();
+
+      // Cache the response, lower TTL for segments
+      cache.set(url, Buffer.from(arrayBuffer), segmentCacheTTL);
+
+      res.set({
+        "Content-Type": guessUrlMime(url),
+        "Cache-Control": "public, max-age=31536000" // 1 year for segments
+      });
+      return res.send(Buffer.from(arrayBuffer));
+    }
+  } catch (error) {
+    console.error('Proxy error:', error);
+    return res.status(500).json({
+      error: "Failed to fetch data",
+      details: error.message
     });
   }
 });
