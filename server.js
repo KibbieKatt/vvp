@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { cleanEnv, makeValidator, num, str } from 'envalid';
 import express from'express';
 import which from 'which';

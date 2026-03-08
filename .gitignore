@@ -1,4 +1,5 @@
 node_modules
+.env
 
 # https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
 .pnp.*
