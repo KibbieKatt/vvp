@@ -18,8 +18,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "async-mutex": "^0.5.0",
     "envalid": "^8.1.1",
     "express": "^5.2.1",
+    "node-cache": "^5.1.2",
+    "node-fetch": "^2.6.7",
     "which": "^6.0.1",
     "yt-dlp-wrap": "^2.3.12"
   }
