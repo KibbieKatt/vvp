@@ -4,6 +4,8 @@ import express from'express';
 import which from 'which';
 import YTDlpWrap from 'yt-dlp-wrap';
 import NodeCache from 'node-cache';
+import morgan from 'morgan';
+import helmet from 'helmet';
 import { Mutex } from 'async-mutex';
 import { proxyFetch } from './lib/proxyFetch.js';
 import { isM3U8, guessUrlMime } from './lib/mimeTypes.js';
@@ -72,6 +74,25 @@ const cache = new NodeCache({ stdTTL: 18000, checkperiod: 30 });
 const segmentCacheTTL = 300;
 // Use a mutex to avoid racing fetches
 const cacheMutex = new Mutex();
+
+// Set up logging
+app.use(morgan('dev'));
+
+// Set up basic security headers
+app.use(helmet());
+
+// CORS
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
+
+// CORS preflight
+app.options('/{*splat}', (req, res) => {
+  res.status(204).end();
+});
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
