@@ -13,13 +13,14 @@
   "license": "MIT",
   "author": "KibbieKatt",
   "type": "module",
-  "main": "index.js",
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "envalid": "^8.1.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "which": "^6.0.1",
+    "yt-dlp-wrap": "^2.3.12"
   }
 }
