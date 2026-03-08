@@ -36,9 +36,22 @@ const env = cleanEnv(process.env, {
   ALLOWED_MIMES: listValidator({ default: defaultAllowedMimes }),
 });
 
+// Print out config for easier sanity checks
+console.log("VVP Config:", env);
+// Warn when all origins allowed
+if (env.ALLOWED_ORIGINS.includes("*")) {
+  console.warn("WARNING: Allowing all origins is a security risk! Consider removing \"*\" from ALLOWED_ORIGINS!");
+}
+
 // Find available yt-dlp
 const ytdlpBin = which.sync(env.YTDLP_BIN);
 const youtubedl = new YTDlpWrap.default(ytdlpBin);
+
+// Print yt-dlp version
+youtubedl.getVersion()
+  .then((res) => {
+    console.log("Using yt-dlp version " + res);
+  });
 
 const app = express();
 
