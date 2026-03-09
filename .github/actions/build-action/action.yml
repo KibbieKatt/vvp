@@ -1,0 +1,21 @@
+name: 'Build'
+description: 'Uses Docker to build the vvp container'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Build container
+      uses: docker/build-push-action@v6
+      with:
+        tags: vvp:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        outputs: |
+          type=docker
+          type=docker,dest=${{ runner.temp }}/vvp-${{ github.sha }}.tar
+    - name: Upload container artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: vvp-container-${{ github.sha }}
+        path: ${{ runner.temp }}/vvp-${{ github.sha }}.tar
