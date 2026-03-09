@@ -1,0 +1,17 @@
+name: 'Test'
+description: 'Runs the vvp container and tests functionality'
+runs:
+  using: "composite"
+  steps:
+    - name: Start container
+      shell: bash
+      run: docker run -d --rm --name vvp -p 3000:3000 -p 4416:4416 vvp:${{ github.sha }}
+    - name: Wait for healthy container
+      shell: bash
+      run: scripts/ci-wait-for-container.sh vvp
+    - name: Test yt-dlp command
+      shell: bash
+      run: scripts/ci-verify-ytdlp.sh vvp
+    - name: Stop container
+      shell: bash
+      run: docker stop vvp

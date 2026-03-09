@@ -1,0 +1,43 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  buildtest:
+    name: Build and Test PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Build vvp container
+        id: build
+        uses: ./.github/actions/build-action
+      - name: Test vvp container
+        id: test
+        uses: ./.github/actions/test-action
+  automerge:
+    name: Automerge Critical Updates
+    needs: buildtest
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'KibbieKatt/vrc-video-proxy'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2.5.0
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Enable auto-merge for Dependabot PRs
+        # Automerge any yt-dlp or bgutil updates, leave deno/node for manual approval
+        if: |
+          contains(steps.metadata.outputs.dependency-names, 'yt-dlp') ||
+          contains(steps.metadata.outputs.dependency-names, 'bgutil-ytdlp-pot-provider')
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

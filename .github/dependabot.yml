@@ -1,0 +1,33 @@
+version: 2
+
+multi-ecosystem-groups:
+  critical:
+    schedule:
+      interval: "daily"
+
+updates:
+  # Critical updates to yt-dlp and bgutil server/plugin
+  - package-ecosystem: "docker"
+    directory: "/"
+    patterns: ["brainicism/bgutil-ytdlp-pot-provider"]
+    multi-ecosystem-group: "critical"
+  - package-ecosystem: "pip"
+    directory: "/"
+    patterns: ["yt-dlp", "bgutil-ytdlp-pot-provider"]
+    multi-ecosystem-group: "critical"
+  # Noncritical updates
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
