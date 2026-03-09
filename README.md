@@ -53,7 +53,7 @@ VVP is a Node.js application designed to proxy and cache video content for playb
 
 ## Manual Deployment
 
-When deploying manually, you must provide your own yt-dlp installation with ejs, deno, bgutil pot plugin, bgutil pot server.
+When deploying manually, you must provide your own yt-dlp installation with ejs, deno, bgutil pot plugin, and bgutil pot server.
 
 ### Prerequisites
 
@@ -70,8 +70,8 @@ When deploying manually, you must provide your own yt-dlp installation with ejs,
 1. Clone the Repository
 
    ```bash
-   git clone https://github.com/KibbieKatt/vrc-video-proxy.git
-   cd vrc-video-proxy
+   git clone https://github.com/KibbieKatt/vvp.git
+   cd vvp
    ```
 
 2. Install Dependencies
