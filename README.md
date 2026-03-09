@@ -43,6 +43,7 @@ VVP is a Node.js application designed to proxy and cache video content for playb
 ## Configuration
 
 * `PORT`: Only needed when running outside of docker. Adjust to avoid conflicts.
+* `YTDLP_BIN`: Set to override the binary VVP uses. Defaults to `yt-dlp`.
 * `REFERER_URL`: Sets the referrer for proxied requests. This defaults to YouTube and currently can only be set globally for all requests.
 * `ALLOWED_ORIGINS`: Sets the allowed domains VVP is allowed to proxy. Defaults to the domain used by YouTube.
   * Origins are matched using minimatch and should be in the format `https://foo.example.com`, or using wildcards, `https://*.example.com`.
@@ -53,7 +54,7 @@ VVP is a Node.js application designed to proxy and cache video content for playb
 
 ## Manual Deployment
 
-When deploying manually, you must provide your own yt-dlp installation with ejs, deno, bgutil pot plugin, bgutil pot server.
+When deploying manually, you must provide your own yt-dlp installation with ejs, deno, bgutil pot plugin, and bgutil pot server.
 
 ### Prerequisites
 
@@ -70,8 +71,8 @@ When deploying manually, you must provide your own yt-dlp installation with ejs,
 1. Clone the Repository
 
    ```bash
-   git clone https://github.com/KibbieKatt/vrc-video-proxy.git
-   cd vrc-video-proxy
+   git clone https://github.com/KibbieKatt/vvp.git
+   cd vvp
    ```
 
 2. Install Dependencies
