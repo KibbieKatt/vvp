@@ -43,6 +43,7 @@ VVP is a Node.js application designed to proxy and cache video content for playb
 ## Configuration
 
 * `PORT`: Only needed when running outside of docker. Adjust to avoid conflicts.
+* `YTDLP_BIN`: Set to override the binary VVP uses. Defaults to `yt-dlp`.
 * `REFERER_URL`: Sets the referrer for proxied requests. This defaults to YouTube and currently can only be set globally for all requests.
 * `ALLOWED_ORIGINS`: Sets the allowed domains VVP is allowed to proxy. Defaults to the domain used by YouTube.
   * Origins are matched using minimatch and should be in the format `https://foo.example.com`, or using wildcards, `https://*.example.com`.
