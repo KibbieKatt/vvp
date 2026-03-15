@@ -104,13 +104,7 @@ When deploying manually, you must provide your own yt-dlp installation with ejs,
      yarn start
      ```
 
-5. Access the Application
-
-   Open your browser and navigate to:
-
-     ```text
-     http://localhost:3000
-     ```
+5. Use the Proxy!
 
 ## Usage
 
@@ -142,12 +136,6 @@ While this endpoint will proxy a video file, it doesn't support range requests, 
   ```bash
   echo "https://example.com/stream/playlist.m3u8" | jq -sRr @uri
   ```
-
-### Test with the HTML Page
-
-* Open the HTML page at `http://localhost:3000`.
-* Enter an `.m3u8` URL in the input field and click "Load Stream".
-* The video will load and play in the video player.
 
 ## Troubleshooting
 
@@ -231,7 +219,7 @@ Urls passed to `/api/proxy` should be urlencoded. Using jq is an easy way to acc
 
 ## Acknowledgements
 
-This repo is started as an ejs rewrite of the [m3u8-streaming-proxy](https://github.com/MetaHat/m3u8-streaming-proxy) project by [Metahat](https://github.com/metahat)
+This repo is started as an esm rewrite of the [m3u8-streaming-proxy](https://github.com/MetaHat/m3u8-streaming-proxy) project by [Metahat](https://github.com/metahat)
 
 ## Contributing
 
