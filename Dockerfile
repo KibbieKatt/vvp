@@ -1,5 +1,5 @@
 # Set up deno / bgutil as stages
-FROM denoland/deno:bin-2.9.6 AS deno
+FROM denoland/deno:bin-2.9.7 AS deno
 FROM brainicism/bgutil-ytdlp-pot-provider:2.0.1-node AS bgutil
 # Use the official Node.js image
 FROM node:26-slim
