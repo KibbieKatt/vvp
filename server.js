@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import { loadEnvFile } from 'node:process';
 import { cleanEnv, makeValidator, num, str } from 'envalid';
 import express from'express';
 import which from 'which';
@@ -31,6 +31,13 @@ const defaultAllowedMimes = [
   "video/mp4", // .mp4
   "video/x-matroska", // .mkv
 ];
+
+// Load .env file if present, falls back to real env values
+try {
+  loadEnvFile();
+} catch (e) {
+  console.warn("WARNING: Could not load .env: " + e.message);
+}
 
 // Validate environment variables
 const env = cleanEnv(process.env, {
