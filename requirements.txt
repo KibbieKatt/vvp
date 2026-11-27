@@ -1,2 +1,2 @@
-yt-dlp[default,curl-cffi]==2026.10.26
+yt-dlp[default,curl-cffi]==2026.11.23
 bgutil-ytdlp-pot-provider==2.0.2
